@@ -4,6 +4,10 @@ const { PrismaClient } = require("../generated/prisma");
 const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
+const passportJWT = require("passport-jwt");
+const JWTStrategy = passportJWT.Strategy;
+const extractJWT = passportJWT.ExtractJwt;
+
 passport.use(
   new LocalStrategy(
     {
@@ -50,3 +54,29 @@ passport.deserializeUser(async (id, done) => {
     done(err);
   }
 });
+
+passport.use(
+  new JWTStrategy(
+    {
+      jwtFromRequest: extractJWT.fromAuthHeaderAsBearerToken(),
+      secretOrKey: "jwt_secret",
+    },
+    async (jwtPayload, done) => {
+      try {
+        const user = await prisma.user.findFirst({
+          where: {
+            id: jwtPayload.id,
+          },
+        });
+
+        if (user) {
+          return done(null, user);
+        } else {
+          return done(null, false);
+        }
+      } catch (error) {
+        return done(error, false);
+      }
+    }
+  )
+);
