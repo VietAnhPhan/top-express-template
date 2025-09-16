@@ -19,6 +19,7 @@ app.use(
 );
 
 require("./config/passport");
+
 app.use(
   session({
     cookie: {
@@ -34,7 +35,8 @@ app.use(
     }),
   })
 );
-app.use(passport.session());
+
+// app.use(passport.session());
 
 app.use((req, res, next) => {
   req.context = {
@@ -51,9 +53,15 @@ app.use("/auth", authRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send(`Something broke! ${err}`);
+  res.status(500).json({ errors: err });
 });
 
-app.listen(3000, () => {
-  console.log("App listen on PORT: 3000");
+app.get("/", (req, res) => {
+  res.json({
+    message: "index",
+  });
+});
+
+app.listen(process.env.APP_PORT, () => {
+  console.log(`App listen on PORT: ${process.env.APP_PORT}`);
 });
