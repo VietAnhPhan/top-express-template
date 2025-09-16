@@ -1,11 +1,15 @@
 const express = require("express");
 const router = express.Router();
+
 const { body, validationResult } = require("express-validator");
-const bcrypt = require("bcryptjs");
+
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
+
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+
+const userController = require("../controllers/userController");
 
 router.post(
   "/sign-up",
@@ -32,66 +36,24 @@ router.post(
       return value === req.body.password;
     })
     .withMessage("Repeat password must match"),
-  async (req, res, next) => {
-    try {
-      const errors = validationResult(req);
+  (req, res, next) => {
+    const errors = validationResult(req);
 
-      if (!errors.isEmpty()) {
-        // return res.status(400).render("signup", {
-        //   title: "Failed to create the user",
-        //   errors: errors.array(),
-        // });
-        // next(errors.array());
-        // throw new Error(errors);
-        return res.json({
-          title: "Fail to create the user",
-          errors: errors.array(),
-        });
-      }
-
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-      const user = {
-        name: req.body.name,
-        username: req.body.username,
-        email: req.body.email,
-        password: hashedPassword,
-        isAdmin: req.body.isAdmin ? true : false,
-      };
-
-      await prisma.user.create({
-        data: user,
+    if (!errors.isEmpty()) {
+      // return res.status(400).render("signup", {
+      //   title: "Failed to create the user",
+      //   errors: errors.array(),
+      // });
+      // next(errors.array());
+      // throw new Error(errors);
+      return res.json({
+        title: "Fail to create the user",
+        errors: errors.array(),
       });
-
-      const userAuth = {
-        username: req.body.username,
-        password: req.body.password,
-      };
-
-      const token = jwt.sign(userAuth, "jwt_secret");
-      return res.json({ userAuth, token });
-
-      //   const createdUser = await prisma.user.findFirst({
-      //     where: {
-      //       user_name: user.user_name,
-      //     },
-      //   });
-
-      //   res.render("index", { title: "Home page", user: createdUser });
-
-      //   req.login(createdUser, (err) => {
-      //     if (!err) {
-      //       res.redirect("/");
-      //     } else {
-      //       next(err);
-      //     }
-      //   });
-    } catch (error) {
-      //   console.log(`Error creating user: ${error}`);
-      //   res.status(500).send("Can not create new user");
-      next(error);
     }
-  }
+    next();
+  },
+  userController.createUser
 );
 
 router.post("/login", (req, res, next) => {
