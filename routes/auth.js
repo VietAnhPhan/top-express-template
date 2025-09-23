@@ -26,7 +26,21 @@ router.post(
         throw new Error("Username already in use");
       }
     }),
-  body("email").notEmpty().withMessage("Email mus be filled").isEmail().trim(),
+  body("email")
+    .notEmpty()
+    .withMessage("Email must be filled")
+    .isEmail()
+    .trim()
+    .custom(async (value) => {
+      const user = await prisma.user.findFirst({
+        where: {
+          email: value,
+        },
+      });
+      if (user) {
+        throw new Error("Email already in use");
+      }
+    }),
   body("password")
     .trim()
     .isLength({ min: 8 })
