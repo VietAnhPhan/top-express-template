@@ -39,7 +39,7 @@ async function createUser(req, res, next) {
       isAdmin: req.body.isAdmin ? true : false,
     };
 
-    await prisma.user.create({
+    const User = await prisma.user.create({
       data: user,
     });
 
@@ -49,7 +49,7 @@ async function createUser(req, res, next) {
     };
 
     const token = jwt.sign(userAuth, "jwt_secret");
-    return res.json({ user: userAuth, token });
+    return res.json({ userId: User.id, token });
   } catch (err) {
     next(err);
   }
