@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const cors = require("cors");
 
 const passport = require("passport");
 const session = require("express-session");
@@ -11,6 +12,7 @@ const models = require("./models/index");
 const routes = require("./routes/index");
 const authRoutes = require("./routes/auth");
 
+app.use(cors());
 app.use(express.json());
 app.use(
   express.urlencoded({
