@@ -64,6 +64,8 @@ async function updateUser(req, res, next) {
       if (key === "password") {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         user.password = hashedPassword;
+      } else if (value === "") {
+        continue;
       } else {
         user[key] = value;
       }
